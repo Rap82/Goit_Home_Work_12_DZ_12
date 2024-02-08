@@ -1026,7 +1026,7 @@
 
 # # ================================ Звдання 8 / Task 8 ======================================
 
- # ================================  Створення копій обєктів . Пакет Copy . deepcopy(Повна копія . і самих обєктів і їх значень) ==========================
+ # ==================  Створення копій обєктів . Пакет Copy . deepcopy(Повна копія . і самих обєктів і їх значень) ==========================
 
 # Для ситуацій, коли нам потрібно, щоб на будь-якому рівні вкладеності створювалися нові об'єкти, 
 # а не посилання на ті що існують, у пакеті copy є функція deepcopy. Ця функція створює рекурсивно нові об'єкти.
@@ -1072,6 +1072,158 @@
 #         ніяких посилання на оригінал. Хоча всі значення будуть такимиж як в оригінала.
 
 
+# import copy
+# import pickle
+
+
+# class Person:
+#     def __init__(self, name: str, email: str, phone: str, favorite: bool):
+#         self.name = name
+#         self.email = email
+#         self.phone = phone
+#         self.favorite = favorite
+
+
+# def copy_class_person(person):
+#     return copy.copy(person)
+
+
+# class Contacts:
+#     def __init__(self, filename: str, contacts: list[Person] = None):
+#         if contacts is None:
+#             contacts = []
+#         self.filename = filename
+#         self.contacts = contacts
+#         self.is_unpacking = False
+#         self.count_save = 0
+
+#     def save_to_file(self):
+#         with open(self.filename, "wb") as file:
+#             pickle.dump(self, file)
+
+#     def read_from_file(self):
+#         with open(self.filename, "rb") as file:
+#             content = pickle.load(file)
+#         return content
+
+#     def __getstate__(self):
+#         attributes = self.__dict__.copy()
+#         attributes["count_save"] = attributes["count_save"] + 1
+#         return attributes
+
+#     def __setstate__(self, value):
+#         self.__dict__ = value
+#         self.is_unpacking = True
+
+
+# def copy_class_contacts(contacts):
+#     '''Власна функція як приймає один аргумент і повертає повну копію його з функції 
+#     Де нетільки сам обєкт буде повністю новий але й 
+#     всі його атрибути бутуть в окремих комірках памяті а не посиланням на оригінал'''
+    
+#     deep_copy_class = copy.deepcopy(contacts) # застосовуємо вбудовану фінкуцію *deepcopy(*якийсь аргумент) пакету *copy
+#                                               # повну копію того що передано як аргумент
+
+#     return deep_copy_class # Повертаємо повну копію з фінкції.
+
+
+# # # # #  # +++++++++++++++++++++++++++++++++++++++++++ Тестові значення і виклик функції (не потрібний для автоперевірки.) +
+
+# contacts = [Person( "Allen Raymond", "nulla.ante@vestibul.co.uk", "(992) 914-3792", False,), 
+#              Person("Chaim Lewis","dui.in@egetlacus.ca", "(294) 840-6685", False,)]
+
+# persons = Contacts("user_class.dat", contacts)
+
+# new_persons = copy_class_contacts(persons)
+
+# new_persons.contacts[0].name = "Another name"
+
+# print(persons.contacts[0].name)  # Allen Raymond
+# print(new_persons.contacts[0].name)  # Another name
+
+
+# # ================================ Звдання 9 / Task 9 ======================================
+
+ # ==================  Створення копій обєктів . Пакет Copy . deepcopy(Повна копія . і самих обєктів і їх значень) ====
+
+# Ще одна проблема вирішується за допомогою пакету copy — це копіювання об'єктів користувача. 
+# Щоб створити об'єкт, який буде коректно оброблятися функціями copy та deepcopy,
+# ваш клас повинен реалізувати два магічних метода: __copy__ та __deepcopy__ 
+# для поверхневого та глибокого копіювання відповідно.
+
+# from copy import deepcopy, copy
+
+
+# class Expenses:
+#     def __init__(self):
+#         self.data = {}
+#         self.places = []
+
+#     def spent(self, place, value):
+#         self.data[str(place)] = value
+#         self.places.append(place)
+
+#     def __copy__(self):
+#         copy_obj = Expenses()
+#         copy_obj.data = copy(self.data)
+#         copy_obj.places = copy(self.places)
+#         return copy_obj
+
+#     def __deepcopy__(self, memo):
+#         copy_obj = Expenses()
+#         memo[id(copy_obj)] = copy_obj
+#         copy_obj.data = deepcopy(self.data)
+#         copy_obj.places = deepcopy(self.places)
+#         return copy_obj
+
+
+# e = Expenses()
+# e.spent('hotel', 100)
+# e.spent('taxi', 10)
+# print(e.places)  # ['hotel', 'taxi']
+
+# e_copy = copy(e)
+# print(e_copy is e)  # False
+# e_copy.spent('bar', 30)
+# print(e.places)  # ['hotel', 'taxi', 'bar']
+
+# e_deep_copy = deepcopy(e)
+# print(e_deep_copy is e)  # False
+# e_deep_copy.spent(
+#     'airport',
+#     300
+# )
+# print(e.places)  # ['hotel', 'taxi', 'bar']
+# print(e_deep_copy.places)  # ['hotel', 'taxi', 'bar', 'airport']
+
+# Використовуючи методи __copy__ та __deepcopy__, ви можете керувати тим, як саме буде створюватися копія вашого об'єкта. 
+# Метод __deepcopy__ обов'язково повинен приймати один аргумент — словник, в який записуються усі об'єкти, 
+# які піддаються копіюванню. Це необхідно, щоб уникнути нескінченної рекурсії, 
+# якщо якийсь об'єкт є спільним для кількох копійованих. 
+# В такому випадку алгоритм глибокого копіювання може зайти в безкінечний цикл, 
+# копіюючи поперемінно об'єкти із посиланнями один на одного. 
+# Словник memo зберігає в якості ключів id об'єктів і самі об'єкти як значення. 
+# Коли перевизначаємо як має відбуватися копіювання, 
+# ми можемо і не використовувати memo, якщо точно знаємо, що рекурсії не виникне.
+
+
+# # ++++++++++++++++++++++++++++++++++++++  Умова / Condition ++++++++++++++++++++++++++++++++++++++++
+
+# Реалізуйте метод __copy__ для класу Person.
+
+# Реалізуйте методи __copy__ та __deepcopy__ для класу Contacts.
+
+
+# +++++++++++++++++++++++++++++++++++++ Код / Code ++++++++++++++++++++++++++++++++++++
+
+# Примітка : Із нового тільки перевизначення двох магічних методів : __copy__(self) , __deepcopy__(self, nemo) 
+            # для класу *Person -  *__copy__(self) 
+            # для класу *Contacts - *__copy__(self) і *__deepcopy__(self, nemo)
+            # Автоперевірку пройшло десь за 5 разом . Кілька раз видавало що занато довго . 
+            # Може приклади попадались не правильні а може глучила автоперевірка.
+
+
+
 import copy
 import pickle
 
@@ -1083,9 +1235,16 @@ class Person:
         self.phone = phone
         self.favorite = favorite
 
-
-def copy_class_person(person):
-    return copy.copy(person)
+    def __copy__(self):
+        copy_obj = Person(self.name, self.email, self.phone,self.favorite )
+        copy_obj.name = copy.copy(self.name)
+        copy_obj.email= copy.copy(self.email)
+        copy_obj.phone = copy.copy(self.phone)
+        copy_obj.favorite = copy.copy(self.favorite)
+        
+        print(copy_obj)
+        return copy_obj
+      
 
 
 class Contacts:
@@ -1115,28 +1274,27 @@ class Contacts:
         self.__dict__ = value
         self.is_unpacking = True
 
+    def __copy__(self):
+        copy_obj = Contacts(self.filename, self.contacts )
+        copy_obj.contacts = copy.copy(self.contacts)
+        copy_obj.filename = copy.copy(self.filename)
+        copy_obj.is_unpacking = copy.copy(self.is_unpacking)
+        copy_obj.count_save = copy.copy(self.count_save)
 
-def copy_class_contacts(contacts):
-    '''Власна функція як приймає один аргумент і повертає повну копію його з функції 
-    Де нетільки сам обєкт буде повністю новий але й 
-    всі його атрибути бутуть в окремих комірках памяті а не посиланням на оригінал'''
-    
-    deep_copy_class = copy.deepcopy(contacts) # застосовуємо вбудовану фінкуцію *deepcopy(*якийсь аргумент) пакету *copy
-                                              # повну копію того що передано як аргумент
+        print(copy_obj)
+        return copy_obj
 
-    return deep_copy_class # Повертаємо повну копію з фінкції.
-
-
-# # # #  # +++++++++++++++++++++++++++++++++++++++++++ Тестові значення і виклик функції (не потрібний для автоперевірки.) +
-
-contacts = [Person( "Allen Raymond", "nulla.ante@vestibul.co.uk", "(992) 914-3792", False,), 
-             Person("Chaim Lewis","dui.in@egetlacus.ca", "(294) 840-6685", False,)]
-
-persons = Contacts("user_class.dat", contacts)
-
-new_persons = copy_class_contacts(persons)
-
-new_persons.contacts[0].name = "Another name"
-
-print(persons.contacts[0].name)  # Allen Raymond
-print(new_persons.contacts[0].name)  # Another name
+    def __deepcopy__(self, memo):
+        
+        copy_obj = Contacts(self.filename, self.contacts )
+        memo[id(copy_obj)] = copy_obj
+        copy_obj.contacts = copy.deepcopy(self.contacts)
+        copy_obj.filename = copy.deepcopy(self.filename)
+        copy_obj.is_unpacking = copy.deepcopy(self.is_unpacking)
+        copy_obj.count_save = copy.deepcopy(self.count_save)
+        print (copy_obj)
+        return copy_obj
+        
+        
+        
+        
